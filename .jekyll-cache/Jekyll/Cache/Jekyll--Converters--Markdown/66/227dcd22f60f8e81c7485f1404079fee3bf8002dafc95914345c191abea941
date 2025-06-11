@@ -1,0 +1,181 @@
+I"�K<p>This post prepares a toy example for estimating probalistic models using Rstan.</p>
+
+<h3 id="motivating-example">Motivating Example</h3>
+<p>Suppose we observe data 
+\(Y \in\mathbb{R}^{n\times d}\)
+and \(X\in \mathbb{R}^{n\times p}\).</p>
+
+<p>We believe the underlying model is
+\(\begin{align}
+Y\sim N(X\beta, \Sigma)
+\end{align}\),
+where \(\beta\in\mathbb{R}^{p\times d}\) and \(\Sigma\) is a diagonal matrix.</p>
+
+<p>How shall we estimate these parameters?</p>
+
+<h3 id="why-rstan">Why Rstan?</h3>
+<p>As I quote from the <a href="https://mc-stan.org">Stan documentation</a>, Stan is a probabilistic programming language that provides high-performance computation (e.g. Bayesian inference) for problems like the above. It interfaces with many languages, and we will focus on <code class="language-plaintext highlighter-rouge">R</code> in this post. In specific, we use <code class="language-plaintext highlighter-rouge">CmdStanR</code>.</p>
+
+<h3 id="installation">Installation</h3>
+<p>Install <code class="language-plaintext highlighter-rouge">cmdstanr</code> following this <a href="https://mc-stan.org/cmdstanr/">documentation</a>.</p>
+
+<h3 id="example">Example</h3>
+<p>Fitting a model using <code class="language-plaintext highlighter-rouge">cmdstanr</code> typically takes three steps:</p>
+<ul>
+  <li>Prepare an input data list.</li>
+  <li>Prepare a stan model.</li>
+  <li>Fit the model with the input data.</li>
+</ul>
+
+<p>Code shown below can also be found on <a href="https://github.com/XinranMiao/stan_example/tree/master/minimal">Github</a>.</p>
+
+<h4 id="data-preparation">Data Preparation</h4>
+
+<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1"># minimal.rmd</span><span class="w">
+</span><span class="c1"># library(cmdstanr); library(dplyr)</span><span class="w">
+
+</span><span class="c1"># Synthetic data generation</span><span class="w">
+</span><span class="n">n</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">100</span><span class="w">
+</span><span class="n">p</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="c1"># dimension of x</span><span class="w">
+</span><span class="n">d</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">2</span><span class="w"> </span><span class="c1"># dimension of y</span><span class="w">
+
+</span><span class="n">x</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">matrix</span><span class="p">(</span><span class="n">rnorm</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="p">),</span><span class="w"> </span><span class="n">nrow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w">
+</span><span class="n">beta0</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">matrix</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">-1</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">-3</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">,</span><span class="w"> </span><span class="m">0</span><span class="p">),</span><span class="w"> </span><span class="n">nrow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w">
+</span><span class="n">y</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">matrix</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">%*%</span><span class="w"> </span><span class="n">beta0</span><span class="p">,</span><span class="w"> </span><span class="n">nrow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">matrix</span><span class="p">(</span><span class="n">rnorm</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w"> </span><span class="n">sd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">.1</span><span class="p">),</span><span class="w"> </span><span class="n">nrow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w">
+
+</span><span class="c1"># `data_list` will be your input data</span><span class="w">
+</span><span class="n">data_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">list</span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">,</span><span class="w">
+                  </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="p">)</span></code></pre></figure>
+
+<h4 id="stan-code">Stan code</h4>
+
+<figure class="highlight"><pre><code class="language-stan" data-lang="stan"><span class="c1">// normal.stan</span>
+<span class="nn">data</span> <span class="p">{</span>
+  <span class="kt">int</span><span class="o">&lt;</span><span class="na">lower</span><span class="o">=</span><span class="mi">1</span><span class="o">&gt;</span> <span class="nv">n</span><span class="p">;</span>
+  <span class="kt">int</span><span class="o">&lt;</span><span class="na">lower</span><span class="o">=</span><span class="mi">1</span><span class="o">&gt;</span> <span class="nv">p</span><span class="p">;</span>
+  <span class="kt">int</span><span class="o">&lt;</span><span class="na">lower</span><span class="o">=</span><span class="mi">1</span><span class="o">&gt;</span> <span class="nv">d</span><span class="p">;</span>
+  <span class="kt">matrix</span><span class="p">[</span><span class="nv">n</span><span class="p">,</span> <span class="nv">d</span><span class="p">]</span> <span class="nv">y</span><span class="p">;</span>
+  <span class="kt">matrix</span><span class="p">[</span><span class="nv">n</span><span class="p">,</span> <span class="nv">p</span><span class="p">]</span> <span class="nv">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nn">parameters</span> <span class="p">{</span>
+  <span class="kt">matrix</span><span class="p">[</span><span class="nv">p</span><span class="p">,</span> <span class="nv">d</span><span class="p">]</span> <span class="nv">beta</span><span class="p">;</span>
+  <span class="kt">vector</span><span class="o">&lt;</span><span class="na">lower</span><span class="o">=</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">[</span><span class="nv">d</span><span class="p">]</span> <span class="nv">sigmas</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="nn">model</span> <span class="p">{</span>
+  <span class="c1">// likelihood</span>
+  <span class="k">for</span> <span class="p">(</span><span class="nv">i</span> <span class="kr">in</span> <span class="mi">1</span><span class="o">:</span><span class="nv">n</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nv">y</span><span class="p">[</span><span class="nv">i</span><span class="p">]</span> <span class="o">~</span> <span class="nb">multi_normal</span><span class="p">(</span><span class="nv">beta</span><span class="o">'</span> <span class="o">*</span> <span class="nb">to_vector</span><span class="p">(</span><span class="nv">x</span><span class="p">[</span><span class="nv">i</span><span class="p">]),</span> <span class="nb">diag_matrix</span><span class="p">(</span><span class="nv">sigmas</span><span class="p">));</span>
+  <span class="p">}</span>
+<span class="p">}</span></code></pre></figure>
+
+<h4 id="model-compilation">Model Compilation</h4>
+
+<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1"># minimal.rmd, continued</span><span class="w">
+</span><span class="n">model</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">cmdstan_model</span><span class="p">(</span><span class="s2">"normal.stan"</span><span class="p">)</span></code></pre></figure>
+
+<h4 id="model-fitting">Model Fitting</h4>
+<p>The <code class="language-plaintext highlighter-rouge">$model</code> method provides MCMC sampling. After sampling, one may obtain draws by calling <code class="language-plaintext highlighter-rouge">$draws()</code> from the fitted object.</p>
+
+<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1"># minimal.rmd, continued</span><span class="w">
+</span><span class="c1">## MCMC</span><span class="w">
+</span><span class="n">mcmc_fit</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">model</span><span class="o">$</span><span class="n">sample</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span><span class="w">
+</span><span class="c1">## Posterior draws</span><span class="w">
+</span><span class="n">mcmc_fit</span><span class="o">$</span><span class="n">draws</span><span class="p">(</span><span class="s2">"beta[1,1]"</span><span class="p">)</span><span class="w">
+
+</span><span class="c1">## A draws_array: 1000 iterations, 4 chains, and 1 variables</span><span class="w">
+</span><span class="c1">#, , variable = beta[1,1]</span><span class="w">
+
+</span><span class="c1">#         chain</span><span class="w">
+</span><span class="c1">#iteration    1    2    3    4</span><span class="w">
+</span><span class="c1">#        1 1.01 0.99 1.00 0.98</span><span class="w">
+</span><span class="c1">#        2 0.99 0.99 1.00 1.01</span><span class="w">
+</span><span class="c1">#        3 0.99 1.00 0.97 0.98</span><span class="w">
+</span><span class="c1">#        4 0.99 0.98 0.98 1.00</span><span class="w">
+</span><span class="c1">#        5 0.99 1.00 1.01 0.99</span><span class="w">
+
+</span><span class="c1">## ... with 995 more iterations</span></code></pre></figure>
+
+<p>You can also obtain the sampling summary by</p>
+
+<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1"># minimal.rmd, continued</span><span class="w">
+</span><span class="n">mcmc_fit</span><span class="o">$</span><span class="n">summary</span><span class="p">()</span><span class="w">
+</span><span class="c1">## A tibble: 11 × 10</span><span class="w">
+</span><span class="c1">#    variable        mean    median      sd     mad       q5      q95  rhat ess_b…¹ ess_t…²</span><span class="w">
+</span><span class="c1">#    &lt;chr&gt;          &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;</span><span class="w">
+</span><span class="c1">#  1 lp__      361.         3.61e+2 2.22    2.07     3.57e+2  3.64e+2 1.00    1906.   2371.</span><span class="w">
+</span><span class="c1">#  2 beta[1,1]   1.00       1.00e+0 0.00894 0.00896  9.88e-1  1.02e+0 1.00    7268.   2817.</span><span class="w">
+</span><span class="c1">#  3 beta[2,1]  -0.988     -9.88e-1 0.00927 0.00906 -1.00e+0 -9.73e-1 1.00    7103.   3187.</span><span class="w">
+</span><span class="c1">#  4 beta[3,1]   0.979      9.79e-1 0.0107  0.0106   9.61e-1  9.96e-1 1.00    6679.   2970.</span><span class="w">
+</span><span class="c1">#  5 beta[4,1]  -0.00940   -9.42e-3 0.0103  0.0105  -2.63e-2  7.29e-3 1.00    8235.   2650.</span><span class="w">
+</span><span class="c1">#  6 beta[1,2]  -2.99      -2.99e+0 0.00925 0.00937 -3.00e+0 -2.97e+0 1.00    6604.   2750.</span><span class="w">
+</span><span class="c1">#  7 beta[2,2]   1.00       1.00e+0 0.00992 0.0101   9.85e-1  1.02e+0 1.00    8557.   3242.</span><span class="w">
+</span><span class="c1">#  8 beta[3,2]   0.00171    1.91e-3 0.0109  0.0108  -1.61e-2  2.00e-2 0.999   6404.   3082.</span><span class="w">
+</span><span class="c1">#  9 beta[4,2]   0.000692   6.32e-4 0.0108  0.0109  -1.69e-2  1.84e-2 1.00    9002.   2984.</span><span class="w">
+</span><span class="c1"># 10 sigmas[1]   0.00895    8.80e-3 0.00133 0.00128  7.02e-3  1.13e-2 1.00    6215.   2802.</span><span class="w">
+</span><span class="c1"># 11 sigmas[2]   0.00973    9.59e-3 0.00147 0.00139  7.58e-3  1.24e-2 1.00    7145.   2823.</span><span class="w">
+</span><span class="c1"># # … with abbreviated variable names ¹​ess_bulk, ²​ess_tail</span></code></pre></figure>
+
+<p>Alternative to MCMC, one may consider a penalized optimization or variational inference.</p>
+
+<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1"># minimal.rmd, continued</span><span class="w">
+</span><span class="c1">## Point estimate</span><span class="w">
+</span><span class="n">opt_fit</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">model</span><span class="o">$</span><span class="n">optimize</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span><span class="w">
+</span><span class="n">opt_fit</span><span class="o">$</span><span class="n">summary</span><span class="p">()</span><span class="w">
+</span><span class="c1">## A tibble: 11 × 2</span><span class="w">
+</span><span class="c1">#    variable    estimate</span><span class="w">
+</span><span class="c1">#    &lt;chr&gt;          &lt;dbl&gt;</span><span class="w">
+</span><span class="c1">#  1 lp__      376.      </span><span class="w">
+</span><span class="c1">#  2 beta[1,1]   1.00    </span><span class="w">
+</span><span class="c1">#  3 beta[2,1]  -0.988   </span><span class="w">
+</span><span class="c1">#  4 beta[3,1]   0.979   </span><span class="w">
+</span><span class="c1">#  5 beta[4,1]  -0.00943 </span><span class="w">
+</span><span class="c1">#  6 beta[1,2]  -2.99    </span><span class="w">
+</span><span class="c1">#  7 beta[2,2]   1.00    </span><span class="w">
+</span><span class="c1">#  8 beta[3,2]   0.00181 </span><span class="w">
+</span><span class="c1">#  9 beta[4,2]   0.000809</span><span class="w">
+</span><span class="c1"># 10 sigmas[1]   0.00824 </span><span class="w">
+</span><span class="c1"># 11 sigmas[2]   0.00895 </span></code></pre></figure>
+
+<figure class="highlight"><pre><code class="language-r" data-lang="r"><span class="c1"># minimal.rmd, continued</span><span class="w">
+</span><span class="c1">## Variational inference</span><span class="w">
+</span><span class="n">var_fit</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">model</span><span class="o">$</span><span class="n">variational</span><span class="p">(</span><span class="n">data_list</span><span class="p">)</span><span class="w">
+</span><span class="n">var_fit</span><span class="o">$</span><span class="n">summary</span><span class="p">()</span><span class="w">
+</span><span class="c1"># # A tibble: 12 × 7</span><span class="w">
+</span><span class="c1">#    variable         mean    median      sd     mad        q5        q95</span><span class="w">
+</span><span class="c1">#    &lt;chr&gt;           &lt;dbl&gt;     &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;</span><span class="w">
+</span><span class="c1">#  1 lp__        174.      174.      3.68    3.76    168.      179.      </span><span class="w">
+</span><span class="c1">#  2 lp_approx__  -4.94     -4.64    2.23    2.00     -9.17     -1.93    </span><span class="w">
+</span><span class="c1">#  3 beta[1,1]     1.01      1.01    0.00893 0.00901   0.999     1.03    </span><span class="w">
+</span><span class="c1">#  4 beta[2,1]    -0.993    -0.993   0.00923 0.00927  -1.01     -0.978   </span><span class="w">
+</span><span class="c1">#  5 beta[3,1]     0.981     0.981   0.0113  0.0109    0.962     0.999   </span><span class="w">
+</span><span class="c1">#  6 beta[4,1]    -0.0190   -0.0187  0.0116  0.0111   -0.0382    0.000335</span><span class="w">
+</span><span class="c1">#  7 beta[1,2]    -2.98     -2.98    0.0101  0.00981  -2.99     -2.96    </span><span class="w">
+</span><span class="c1">#  8 beta[2,2]     1.00      1.00    0.00980 0.00917   0.984     1.02    </span><span class="w">
+</span><span class="c1">#  9 beta[3,2]     0.00614   0.00611 0.0113  0.0105   -0.0125    0.0243  </span><span class="w">
+</span><span class="c1"># 10 beta[4,2]    -0.00542  -0.00565 0.0114  0.0116   -0.0244    0.0133  </span><span class="w">
+</span><span class="c1"># 11 sigmas[1]     0.00940   0.00934 0.00133 0.00131   0.00737   0.0118  </span><span class="w">
+</span><span class="c1"># 12 sigmas[2]     0.0101    0.00992 0.00178 0.00166   0.00748   0.0133  </span><span class="w">
+</span><span class="n">var_fit</span><span class="o">$</span><span class="n">draws</span><span class="p">(</span><span class="s2">"sigmas"</span><span class="p">)</span><span class="w">
+</span><span class="c1">## A draws_matrix: 1000 iterations, 1 chains, and 2 variables</span><span class="w">
+</span><span class="c1">#      variable</span><span class="w">
+</span><span class="c1"># draw sigmas[1] sigmas[2]</span><span class="w">
+</span><span class="c1">#   1     0.0098    0.0106</span><span class="w">
+</span><span class="c1">#   2     0.0071    0.0133</span><span class="w">
+</span><span class="c1">#   3     0.0098    0.0092</span><span class="w">
+</span><span class="c1">#   4     0.0103    0.0128</span><span class="w">
+</span><span class="c1">#   5     0.0106    0.0097</span><span class="w">
+</span><span class="c1">#   6     0.0099    0.0104</span><span class="w">
+</span><span class="c1">#   7     0.0093    0.0103</span><span class="w">
+</span><span class="c1">#   8     0.0090    0.0069</span><span class="w">
+</span><span class="c1">#   9     0.0091    0.0124</span><span class="w">
+</span><span class="c1">#   10    0.0102    0.0128</span><span class="w">
+</span><span class="c1"># # ... with 990 more draws</span></code></pre></figure>
+
+<h3 id="resources">Resources:</h3>
+
+<p><a href="https://mc-stan.org/cmdstanr/articles/cmdstanr-internals.html">How does CmdStanR work?</a></p>
+
+<p><a href="https://mc-stan.org/docs/stan-users-guide/index.html">Stan User’s Guide (version 2.31)</a></p>
+:ET
