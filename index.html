@@ -2,8 +2,164 @@
 layout: default
 ---
 
-
 <head>
+    <style>
+    {
+        box-sizing: border-box;
+    }
+
+    h2 {
+    font-weight: 700;
+    font-size: 1.6em;
+    letter-spacing: 0.5px;
+    
+    }
+
+    /* Set additional styling options for the columns*/
+    .column {
+    float: left;
+    }
+    
+	.left {
+    width: 70%;
+    }
+	.middle {
+    width: 5%;
+    }
+    .right {
+    width: 25%;
+    }
+
+    .row:after {
+    content: "";
+    display: table;
+    clear: both;
+    }
+/* News ==================== */
+    .news-container {
+     border: 1px solid #ccc;
+     border-radius: 8px;
+    padding: 10px;
+    height: 160px;
+    overflow-y: auto; /* Manual scroll */
+    background-color: #f9f9f9;
+    margin-bottom: 10px;
+    }
+
+    .news-list {
+    list-style-type: none;
+    margin: 0;
+    padding-left: 2px;
+    }
+
+    .news-list li {
+    margin-bottom: 12px;
+    }
+
+    .news-date {
+    font-weight: bold;
+    margin-right: 8px;
+    }
+
+    .news-container h2 {
+    margin-bottom: 2px;  /* or 0px for no gap at all */
+    }
+
+    .news-divider {
+    height: 1px;
+    background-color: #ccc;
+    margin: -13px 0 8px 0;
+    }
+
+/* Research */
+    .education-entry {
+    display: grid;
+    grid-template-columns: 500px 1fr; /* first column: school & degree */
+    gap: 20px;
+    margin-bottom: 14px;
+    font-family: sans-serif;
+    }
+
+    .education-info {
+    font-weight: 500;
+    color: #000;
+    }
+
+    .education-year {
+    font-weight: 500;
+    }
+
+
+    /* Teaching list  */
+    .subtitle {
+    font-style: italic;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.teaching-entry {
+  display: grid;
+  grid-template-columns: 500px 1fr; /* course title column is now 300px wide */
+  gap: 20px;
+  margin-bottom: 18px;
+  font-family: sans-serif;
+}
+
+.course-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.course-title {
+  font-weight: 500;
+  color: #000;
+}
+
+.course-description {
+  font-size: 0.9em;
+  color: #777;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.term {
+  font-weight: 500;
+}
+
+
+/* Award  */
+.award-entry {
+  display: grid;
+  grid-template-columns: 500px 1fr; /* adjust the width as needed */
+  gap: 20px;
+  margin-bottom: 16px;
+  font-family: sans-serif;
+}
+
+.award-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.award-name {
+  font-weight: 500;
+  color: #000;
+}
+
+.award-description {
+  font-size: 0.9em;
+  color: #777;
+  margin-top: 4px;
+  font-style: italic;
+}
+
+.award-year {
+  font-weight: 500;
+}
+
+</style>
+ </head>
+<!-- <head>
     <style>
     {
         box-sizing: border-box;
@@ -29,41 +185,143 @@ layout: default
     clear: both;
     }
     </style>
- </head>
+ </head> -->
  <body>
     <div class="row">
         <div class="column left">
 	             <p>I'm a Ph.D. student in Statistics at <a href="https://stat.wisc.edu">University of Wisconsin-Madison</a> advised by
                  <a href="https://pages.cs.wisc.edu/~hyunseung/">Professor Hyunseung Kang</a>. 
                  Prior to coming to Madison, I received B.S. in Statistics from <a href="https://www.zju.edu.cn/english/">Zhejiang University</a>.
+                 </p>
                  
-                 My research interests are semiparametric statistics, spatial statistics, causal inference with application in groundwater contaminants.
-                </p>
+                 <p>My research interests are spatial statistics, causal inference, and semi/nonparametric statistics.</p>
+                
                 
 
 			 <h2>Education</h2>
-			  <p> Ph.D. in Statistics, University of Wisconsin-Madison, 2021-present</p>
-			     <p> B.S. in Statistics, Zhejiang University, 2016-2020</p>
+			  <!-- <p> Ph.D. in Statistics, University of Wisconsin-Madison, 2021-present</p>
+			     <p> B.S. in Statistics, Zhejiang University, 2016-2020</p> -->
+                 <div class="education-entry">
+                    <div class="education-info">
+                    Ph.D. in Statistics, University of Wisconsin–Madison
+                    </div>
+                    <div class="education-year"> 2026</div>
+                    </div>
+
+
+                    <div class="education-entry">
+                    <div class="education-info">
+                    B.S. in Statistics, Zhejiang University
+                    </div>
+                    <div class="education-year">2020</div>
+                    </div>
 			     
 			     
-			 <h2> Award </h2>
-             <li>Student and Early Career Travel Fund, awarded by American Statistical Associations, 2025 </li>
+			 <h2> Honors and Awards </h2>
+             <!-- <li>Student and Early Career Travel Fund, awarded by American Statistical Associations, 2025 </li>
              <li>NESS Student Paper Award, awarded by New England Statistics Symposium, 2025 </li>
              
-			 <li>Best Student Paper Award, awarded by Nonparametric Statistics Section, American Statistical Associations, 2024 [<a href="https://stat.wisc.edu/2024/02/26/phd-student-xindi-lin-marks-career-milestone-with-award-from-american-statistical-association/">Department News</a>] </li>
+			 <li>Best Student Paper Award, awarded by Nonparametric Statistics Section, American Statistical Associations, 2024 [<a href="https://stat.wisc.edu/2024/02/26/phd-student-xindi-lin-marks-career-milestone-with-award-from-american-statistical-association/">Department News</a>] </li> -->
 			 <!-- <li>Chinese National Fellowship, awarded by Ministry of Education, 2018</li>
 			 -->
-			 
+             <div class="award-entry">
+                <div class="award-info">
+                    <div class="award-name">
+                    Student and Early Career Travel Fund
+                    </div>
+                    <div class="award-description">
+                    Awarded by American Statistical Association
+                    </div>
+                </div>
+                <div class="award-year">2025</div>
+                </div>
+
+            <div class="award-entry">
+                <div class="award-info">
+                    <div class="award-name">
+                    NESS Student Paper Award
+                    </div>
+                    <div class="award-description">
+                    Awarded by New England Statistics Symposium
+                    </div>
+                </div>
+                <div class="award-year">2025</div>
+                </div>
+
+            <div class="award-entry">
+                <div class="award-info">
+                    <div class="award-name">
+                    ASA Best Student Paper Award
+                    </div>
+                    <div class="award-description">
+                    Awarded by Nonparametric Statistics Section, American Statistical Association
+                    [<a href="https://stat.wisc.edu/2024/02/26/phd-student-xindi-lin-marks-career-milestone-with-award-from-american-statistical-association/">Department News</a>]
+                    </div>
+                </div>
+                <div class="award-year">2024</div>
+                </div>
+            
+            <div class="award-entry">
+                <div class="award-info">
+                    <div class="award-name">
+                    National Scholarship
+                    </div>
+                    <div class="award-description">
+                    Awarded by Ministry of Education, China
+                    </div>
+                </div>
+                <div class="award-year">2017</div>
+                </div>
+
+		<!---
+Teaching
+-->
+<!-- <h2>Teaching Experience</h2>
+<p>Teaching Assistant at UW–Madison</p>
+
+    <div class="teaching-entry">
+     <div class="course-info">
+    <div class="course-title">STAT 340: Data Science Modeling II</div>
+    <div class="course-description">Introductory course for undergraduate students, three parallel sessions</div>
+     </div> <div class="term">Spring 2024</div>
+    </div>
+
+   
+
+
+    <div class="teaching-entry">
+  <div class="course-info">
+    <div class="course-title">349: Introduction to Time Series</div>
+    <div class="course-description">Elective course for undergraduate students.</div>
+  </div>
+  <div class="term">Spring 2024</div>
+
+    </div><div class="teaching-entry">
+    <div class="course-info">
+    <div class="course-title">304: R for Statistics II</div>
+    <div class="course-description">Elective course for undergraduate students.</div>
+    </div>
+    <div class="term">Summer 2022</div>
+    </div>
+
+     <div class="teaching-entry">
+    <div class="course-info">
+    <div class="course-title">STAT 371: Introductory Applied Statistics for the Life Sciences.</div>
+    <div class="course-description">Elective course for undergraduate students with a non-statistics major, three parallel sessions</div>
+    </div>
+    <div class="term">Fall 2021, Spring 2022, Spring 2023</div>
+    </div> -->
         </div>
+        
 		<div class="column middle">
 			<p></p>
 		</div>
         <div class="column right">
-            {% include image.html url="/images/xindilin_new.png" caption="June, 2025 at Madison, WI." width=800 align="center" %}
-			<ul class="contact-list">
+            {% include image.html url="/images/xindilin_1.png" caption="June, 2025 at Madison, WI." width=800 align="center" %}
+			<!-- <ul class="contact-list">
 				<li><a href="https://github.com/XindiLIN">Github</a></li>
 				<li><a href="mailto:{{ site.email }}">{{ site.email }}</a></li>
-			  </ul>
+			  </ul> -->
         </div>
     </div>
  </body>

@@ -185,7 +185,7 @@ h1 /* .post-title */ {
     line-height: 1;
 		font-family: 'Raleway', sans-serif;
         font-size: 32px;
-		color: $deep-purple;
+		color: black;
 
     @include media-query($on-laptop) {
 /*        font-size: 36px; */
@@ -195,7 +195,7 @@ h1 /* .post-title */ {
 h2 {
     font-family: 'Raleway', sans-serif;
 font-weight: 500;
-color: $deep-purple;
+color: black;
         font-size: 26px; 
 
     @include media-query($on-laptop) {
@@ -205,7 +205,7 @@ color: $deep-purple;
 
 h3 {
     font-family: 'Raleway', sans-serif;
-color: $deep-purple;
+color: black;
 font-weight: 500;
         font-size: 22px; 
 
@@ -217,7 +217,7 @@ h4 {
     font-family: 'Raleway', sans-serif;
 font-weight: 500;
 font-weight: bold;
-color: $deep-purple;
+color: black;
         font-size: 18px; 
 
     @include media-query($on-laptop) {
