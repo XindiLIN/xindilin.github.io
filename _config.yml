@@ -1,8 +1,8 @@
 # Site settings
 title: Xindi Lin
-email: xlin268@wisc.edu
+email: xindi.lin@yale.edu
 description: > # this means to ignore newlines until "baseurl:"
-  I'm a third-year PhD student in Statistics at University of Wisconsin-Madison.
+  I'm a postdoc in the Department of Biostatistics at Yale University.
 baseurl: "" # the subpath of your site, e.g. /blog/
 url: https://xindilin.github.io # the base hostname & protocol for your site
 linkedin_username: xinran-miao-56271b231
